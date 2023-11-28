@@ -1,5 +1,5 @@
 # Function3
-Function3 is a Typescript NPM Package powered by Chainlink's CCIP for handling crosschain token/data transfers in dapps.
+Function3 is an NPM library powered by Chainlink's CCIP for handling crosschain token/data transfers in dapps.
 
 # The purpose of Function3
 Developers building with Chainlink's CCIP should not worry about switching multiple tabs to check for the following;
@@ -12,8 +12,7 @@ Supported tokens and
 
 Supported lanes.
 
-# Function3 features
-Function 3 is also a package for;
+# Function3 features templates for
 
 Setting CCIP gasLimits.
 
@@ -21,4 +20,9 @@ Handling extraArgs to automate future CCIP updates,
 
 Handling sequencing to organize transaction flows.
 
-EOA is an abbreviation for "Externally Owned Accounts".
+# Note
+NPM is an abbreviation for Node Package Manager.
+
+CCIP is an abbreviation for Crosschain Interoperability Protocol.
+
+EOA is an abbreviation for "Externally Owned Account".
