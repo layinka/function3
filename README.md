@@ -1,6 +1,5 @@
 # Function3
-Function3 is an NPM library powered by Chainlink's CCIP for handling crosschain token/data transfers in dapps.
-
+Use NPM library to instantly embed cross-chain experiences.
 # The purpose of Function3
 Developers building with Chainlink's CCIP should not worry about switching multiple tabs to check for the following;
 
