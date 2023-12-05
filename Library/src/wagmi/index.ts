@@ -1,12 +1,15 @@
 import { fetchToken, getContract, getNetwork, getPublicClient, getWalletClient, readContract, sepolia,  waitForTransaction, erc20ABI } from "@wagmi/core"
 import {prepareWriteContract, writeContract } from "wagmi/actions";
-import { BasicTokenSenderABI, BurnMintERC677HelperABI } from "../abis";
+import { BasicMessageSenderABI, BasicTokenSenderABI, BurnMintERC677HelperABI } from "../abis";
 import { CCIP_BnM_ADDRESSES, PaymentCurrency } from "../constants";
 import { RouterABI } from "../abis";
 import { routerConfig, supportedChains } from "../constants";
-import { keccak256, toHex, encodeAbiParameters, parseAbiParameters, getContract as getViemContract } from "viem";
+import { keccak256, toHex, encodeAbiParameters, parseAbiParameters, getContract as getViemContract, parseAbiItem } from "viem";
 import { zeroAddress } from "viem/_types/constants/address";
 import { simulateContract } from "viem/_types/actions/public/simulateContract";
+import { createEventFilter } from "viem/_types/actions/public/createEventFilter";
+import {publicClientToProvider} from '../utils/wagmi'
+import parseEventLogs from "../utils/parseEventLogs";
 
 const MAX_TOKENS_LENGTH = 5;
 
@@ -575,4 +578,77 @@ export const transferTokens = async (sourceChainId: number, destinationChainId: 
 
 
 
+/**
+ * Sends a message to a contract on another blockchain using Chainlink CCIP. Receiver contract must inherit from CCIPReceiver 
+ * @param sourceChainId Source Chain
+ * @param destinationChainId Destination Chain
+ * @param receiver Receiver Contract account on Destination Chain
+ * @param message The message to send
+ * @param feeCurrency Choose between 'Native' and 'LINK'
+ * @param walletClient WalletClient to sign the TX
+ * @returns 
+ */
+export const sendMessage = async (sourceChainId: number, destinationChainId: number, receiver: string,
+  message: string, feeCurrency: PaymentCurrency, walletClient?: any) => {
+  
 
+  /* 
+  ==================================================
+      Section: INITIALIZATION
+      This section of the code parses the source and 
+      destination router addresses and blockchain 
+      selectors.
+      It also initialized the ethers providers 
+      to communicate with the blockchains.
+  ==================================================
+  */
+
+  if(!walletClient){
+      walletClient = await getWalletClient({chainId: sourceChainId})
+  }
+
+  const publicClient = await getPublicClient({chainId: sourceChainId})
+  
+  const prepareCfx = await prepareWriteContract({
+      address: routerConfig[sourceChainId].messageSender as any,
+      abi: BasicMessageSenderABI,
+      functionName: 'send',
+      args:[routerConfig[destinationChainId].chainSelector, receiver, message, feeCurrency ],
+      chainId: sourceChainId,
+      walletClient
+  })
+
+  const sendTx = await writeContract(prepareCfx);
+  const receipt = await waitForTransaction({hash: sendTx.hash})
+
+  let logs;
+
+  try{
+    //@ts-ignore
+    const filter = await createEventFilter(publicClient, {
+      address: routerConfig[sourceChainId].messageSender as `0x${string}`,
+      event: parseAbiItem('event MessageSent(bytes32 messageId)'),
+    });
+
+    //@ts-ignore
+    logs = await getFilterLogs(publicClient, {filter: filter})
+  }catch(err){
+
+  }
+
+  if(!logs){
+    const provider = publicClientToProvider(publicClient)
+
+    logs = await parseEventLogs(provider, sendTx.hash,['event MessageSent(bytes32 messageId)'], 'MessageSent')
+  }
+
+  const messageId = logs[0]['args']['messageId'].toString()
+
+  return {
+    sendHash: sendTx.hash,
+    messageId
+  }
+
+
+  
+};

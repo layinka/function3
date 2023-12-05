@@ -3,6 +3,8 @@ import {prepareWriteContract, writeContract } from "wagmi/actions";
 import { BurnMintERC677HelperABI } from "../../abis";
 import { CCIP_BnM_ADDRESSES } from "../../constants";
 
+export {publicClientToProvider,getEthersProvider, walletClientToSigner, getEthersSigner } from "./ethers-wagmi-adapter"
+
 
 /**
  * Mints 10**18 units of CCIP-BnM and CCIP-LnM tokens to receiver address

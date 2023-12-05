@@ -63,6 +63,7 @@ export const routerConfig : {[chainId: number]: {
     feeTokens: string[];
     supportedTokens?: {[chainId: number]: string[]};
     tokenSender: string;
+    messageSender: string;
 }}  = {
     11155111: {
         address: `0xd0daae2231e9cb96b94c8512223533293c3693bf`,
@@ -75,19 +76,22 @@ export const routerConfig : {[chainId: number]: {
             80001:[`0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05`, `0x466D489b6d36E7E3b824ef491C225F5830E81cC1`],
             84531: [`0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05`, `0x466D489b6d36E7E3b824ef491C225F5830E81cC1`],
         },
-        tokenSender: ''
+        tokenSender: '',
+        messageSender:''
     },
     420: {
         address: `0xeb52e9ae4a9fb37172978642d4c141ef53876f26`,
         chainSelector: `2664363617261496610`,
         feeTokens: [LINK_ADDRESSES[420], `0x4200000000000000000000000000000000000006`],
-        tokenSender: ''
+        tokenSender: '',
+        messageSender:''
     },
     43113: {
         address: `0x554472a2720e5e7d5d3c817529aba05eed5f82d8`,
         chainSelector: `14767482510784806043`,
         feeTokens: [LINK_ADDRESSES[43113], `0xd00ae08403B9bbb9124bB305C09058E32C39A48c`],
-        tokenSender: ''
+        tokenSender: '',
+        messageSender:''
     },
     // arbitrumTestnet: {
     //     address: `0x88e492127709447a5abefdab8788a15b4567589e`,
@@ -98,19 +102,22 @@ export const routerConfig : {[chainId: number]: {
         address: `0x70499c328e1e2a3c41108bd3730f6670a44595d1`,
         chainSelector: `12532609583862916517`,
         feeTokens: [LINK_ADDRESSES[80001], `0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889`],
-        tokenSender: ''
+        tokenSender: '',
+        messageSender:''
     },
     97: {
         address: `0x9527e2d01a3064ef6b50c1da1c0cc523803bcff2`,
         chainSelector: `13264668187771770619`,
         feeTokens: [LINK_ADDRESSES[97], `0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd`],
-        tokenSender: ''
+        tokenSender: '',
+        messageSender:''
     },
     84531: {
         address: `0xa8c0c11bf64af62cdca6f93d3769b88bdd7cb93d`,
         chainSelector: `5790810961207155433`,
         feeTokens: [LINK_ADDRESSES[84531], `0x4200000000000000000000000000000000000006`],
-        tokenSender: ''
+        tokenSender: '',
+        messageSender:''
     }
 
 }

@@ -1,7 +1,7 @@
 {
   "name": "function3",
   "version": "0.0.3-cross",
-  "description": "Crosschain Library",
+  "description": "Crosschain Library Based on CCIP",
   "main": "./lib/index.js",
   "files": [
     "lib/**/*"
@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf ./lib/",
-    "cm": "cz",        
+    "cm": "cz",
     "semantic-release": "semantic-release",
     "test:watch": "jest --watch",
     "test": "jest --coverage",
@@ -118,6 +118,7 @@
     ]
   },
   "dependencies": {
+    "ethers": "^5.7.2",
     "viem": "^1.19.11",
     "wagmi": "^1.4.7"
   }
