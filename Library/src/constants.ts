@@ -65,7 +65,7 @@ export const routerConfig : {[chainId: number]: {
     tokenSender: string;
     messageSender: string;
 }}  = {
-    11155111: {
+    11155111: {// Sepolia
         address: `0xd0daae2231e9cb96b94c8512223533293c3693bf`,
         chainSelector: `16015286601757825753`,
         feeTokens: [LINK_ADDRESSES[11155111], `0x097D90c9d3E0B50Ca60e1ae45F6A81010f9FB534`],
@@ -76,8 +76,8 @@ export const routerConfig : {[chainId: number]: {
             80001:[`0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05`, `0x466D489b6d36E7E3b824ef491C225F5830E81cC1`],
             84531: [`0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05`, `0x466D489b6d36E7E3b824ef491C225F5830E81cC1`],
         },
-        tokenSender: '',
-        messageSender:''
+        tokenSender: '0xE47050824F0Ec836a3A0EA0bfcdBfbF4743bEe77',
+        messageSender:'0x6A75daCCA1fAeFec99F20f88866b4a3F6cD61467'
     },
     420: {
         address: `0xeb52e9ae4a9fb37172978642d4c141ef53876f26`,
@@ -98,12 +98,12 @@ export const routerConfig : {[chainId: number]: {
     //     chainSelector: `6101244977088475029`,
     //     feeTokens: [LINK_ADDRESSES[`arbitrumTestnet`], `0x32d5D5978905d9c6c2D4C417F0E06Fe768a4FB5a`]
     // },
-    80001: {
+    80001: {//Polygon mumbai
         address: `0x70499c328e1e2a3c41108bd3730f6670a44595d1`,
         chainSelector: `12532609583862916517`,
         feeTokens: [LINK_ADDRESSES[80001], `0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889`],
-        tokenSender: '',
-        messageSender:''
+        tokenSender: '0x7286863cd4204F46a1A5cD2A0970660bB0f51092',
+        messageSender:'0xF8b13A57e813B7F2C2Cd7d9184b2644725471c97'
     },
     97: {
         address: `0x9527e2d01a3064ef6b50c1da1c0cc523803bcff2`,
