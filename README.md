@@ -1,5 +1,5 @@
 # Function3
-Use NPM library to allow easy cross-chain experiences in dapps.
+JavaScript library for easy crosschain integrations
 # The purpose of Function3
 Developers building with Chainlink's CCIP should not worry about switching multiple tabs to check for the following;
 
