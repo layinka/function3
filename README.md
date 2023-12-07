@@ -1,5 +1,5 @@
 # Function3
-Integrate crosschain experience in dapps, easily with JavaScript library.
+JavaScript library for easy crosschain integrations
 # The purpose of Function3
 Developers building with Chainlink's CCIP should not worry about switching multiple tabs to check for the following;
 
