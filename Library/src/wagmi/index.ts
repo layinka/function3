@@ -4,7 +4,7 @@ import { BasicMessageSenderABI, BasicTokenSenderABI, BurnMintERC677HelperABI } f
 import { CCIP_BnM_ADDRESSES, PaymentCurrency } from "../constants";
 import { RouterABI } from "../abis";
 import { routerConfig, supportedChains } from "../constants";
-import { keccak256, toHex, encodeAbiParameters, parseAbiParameters, getContract as getViemContract, parseAbiItem } from "viem";
+import { keccak256, toHex, encodeAbiParameters, parseAbiParameters, getContract as getViemContract, parseAbiItem, parseEther } from "viem";
 import { zeroAddress } from "viem";
 import { createEventFilter, simulateContract } from "viem/actions";
 
@@ -49,6 +49,11 @@ export const mintTestCCIPTokens = async (receiver: `0x${string}`, walletClient: 
     console.log('hash: ', hash)
 
     return await waitForTransaction({hash, chainId})
+}
+
+
+export const fundLibrary = async (amount: bigint, accountToFund: string)=>{
+
 }
 
 
@@ -231,8 +236,12 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
     ==================================================
     */
   
-    const fees = await sourceRouter.read.getFee([destinationChainIdSelector, message]);
-    console.log(`Estimated fees (wei): ${fees}`);
+    const feesResult = await sourceRouter.read.getFee([destinationChainIdSelector, message]);
+    console.log(`Estimated fees (wei): ${feesResult}`);
+    console.log(`Estimated fees (wei): ${parseEther(''+feesResult, 'wei')}`);
+
+    const fees: bigint = feesResult as any;// parseEther(''+feesResult, 'wei')
+    
   
     /* 
     ==================================================
@@ -254,49 +263,98 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
 
     } )
 
-   
+    const pClient = getPublicClient({chainId: sourceChainId})
+  
+  
     
     let sendHash: string, approvalHash: any;
   
-    if (!feeTokenAddress) {
+    if (!feeTokenAddress || feeTokenAddress==zeroAddress) {
+
+      console.log('using native')
       // Pay native
       // First approve the router to spend tokens
-      //@ts-ignore
-      const approvalTx = await erc20.write.approve([sourceRouterAddress, amount]);
-      approvalHash=approvalTx.hash;
-      await waitForTransaction({hash: approvalHash}); // wait for the transaction to be mined
-      console.log(
-        `approved router ${sourceRouterAddress} to spend ${amount} of token ${tokenAddress}. Transaction: ${approvalHash}`
-      );
-    
-      //@ts-ignore
-      const sendTx = await sourceRouter.write.ccipSend([destinationChainIdSelector, message], {
-        value: fees,
-      }); // fees are send as value since we are paying the fees in native
-      sendHash=sendTx.hash;
-    } else {
+
+      const allowance = await erc20.read.allowance([pClient.account as any, sourceRouterAddress as any]);
+
+      if(allowance< amount){
+        //@ts-ignore
+        const approvalTx = await erc20.write.approve([sourceRouterAddress, amount], {
+          gas: '260000',
+        });
+        approvalHash=approvalTx.hash;
+        await waitForTransaction({hash: approvalHash}); // wait for the transaction to be mined
+        console.log(
+          `approved 1 router ${sourceRouterAddress} to spend ${amount} of token ${tokenAddress}. Transaction: ${approvalHash}`
+        );
+      }else{
+        'Skipping aallowance'
+      }
+      
+      try{
+
+        const ccipSendConfig = await prepareWriteContract({
+          abi: RouterABI,
+          address: sourceRouterAddress as any,
+          functionName: 'ccipSend',
+          args: [destinationChainIdSelector, message],
+          chainId: sourceChainId,
+          walletClient,
+          value: fees // fees are send as value since we are paying the fees in native
+        })
+        console.log('ccipSendConfig using natve: ', ccipSendConfig)
+        const sendTx = await writeContract(ccipSendConfig)
+
+        // //@ts-ignore
+        // const sendTx = await sourceRouter.write.ccipSend([destinationChainIdSelector, message], {
+        //   value: fees,
+        //   gas: '3000000'
+        // }); // fees are send as value since we are paying the fees in native
+        sendHash=sendTx.hash;
+      }catch(err){
+        console.error('Errro using natve: ', err)
+        sendHash=''
+      }
+      
+    } 
+    else {
+      console.log('using feetoken')
       if (tokenAddress.toUpperCase() === feeTokenAddress.toUpperCase()) {
         // fee token is the same as the token to transfer
-        // Amount tokens to approve are transfer amount + fees
-        //@ts-ignore
-        const approvalTx = await erc20.write.approve([sourceRouterAddress, amount + fees]);
-        approvalHash= approvalTx.hash;
-        await waitForTransaction({hash: approvalHash});
+
+        const allowance = await erc20.read.allowance([pClient.account as any, sourceRouterAddress as any]);
+
+        if(allowance< amount+ (fees as any)){
+          // Amount tokens to approve are transfer amount + fees
+          //@ts-ignore
+          const approvalTx = await erc20.write.approve([sourceRouterAddress, amount + fees],  {
+            gas: '260000',
+          });
+          approvalHash= approvalTx.hash;
+          await waitForTransaction({hash: approvalHash});
+
+          console.log(
+            `approved router 2 ${sourceRouterAddress} to spend ${amount} and fees ${fees} of token ${tokenAddress}. Transaction: ${approvalTx.hash}`
+          );
+        }
 
         
-        console.log(
-          `approved router ${sourceRouterAddress} to spend ${amount} and fees ${fees} of token ${tokenAddress}. Transaction: ${approvalTx.hash}`
-        );
+        
       } else {
         // fee token is different than the token to transfer
         // 2 approvals
-        //@ts-ignore
-        const approvalTx = await erc20.write.approve([sourceRouterAddress, amount]); // 1 approval for the tokens to transfer
-        approvalHash= approvalTx.hash;
-        await waitForTransaction({hash: approvalHash});
-        console.log(
-          `approved router ${sourceRouterAddress} to spend ${amount} of token ${tokenAddress}. Transaction: ${approvalTx.hash}`
-        );
+
+        const allowance = await erc20.read.allowance([pClient.account as any, sourceRouterAddress as any]);
+        if(allowance< amount){
+          //@ts-ignore
+          const approvalTx = await erc20.write.approve([sourceRouterAddress, amount]); // 1 approval for the tokens to transfer
+          approvalHash= approvalTx.hash;
+          await waitForTransaction({hash: approvalHash});
+          console.log(
+            `approved router 3 ${sourceRouterAddress} to spend ${amount} of token ${tokenAddress}. Transaction: ${approvalTx.hash}`
+          );
+        }
+
         const approveFeeTx = await writeContract({ // approval for the fees token
             abi: erc20ABI,
             address: feeTokenAddress as any,
@@ -315,7 +373,7 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
         })
         
         console.log(
-          `approved router ${sourceRouterAddress} to spend  fees ${fees} of token ${feeTokenAddress}. Transaction: ${approvalTx.hash}`
+          `approved router ${sourceRouterAddress} to spend  fees ${fees} of token ${feeTokenAddress}. Transaction: ${approveFeeTx.hash}`
         );
       }
 
@@ -349,9 +407,7 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
     // // Simulate a contract call with the transaction data at the block before the transaction
     // const messageId = await provider.call(call, receipt.blockNumber - 1);
 
-    const pClient = getPublicClient({chainId: sourceChainId})
-  
-  
+    
     //@ts-ignore
     const messageId = await simulateContract(pClient, {
         address: sourceRouterAddress as `0x${string}`,
