@@ -1,27 +1,74 @@
 # Function3
-JavaScript library for easy crosschain integrations
+Typescript/JavaScript library for easy crosschain integrations via CCIP
+
 # The purpose of Function3
-Developers building with Chainlink's CCIP should not worry about switching multiple tabs to check for the following;
+Integrate Crosschain functionality directly into your dApp without having to write smart contracts.
 
-Supported blockchain networks(source and destination),
+Use our NPM Package that has supports for the following;
 
-Supported accounts(smart contracts/routers and EOAs),
+- Supported blockchain networks(source and destination),
 
-Supported tokens and
+- Supported accounts(smart contracts/routers and EOAs),
 
-Supported lanes.
+- Supported tokens and
+
+- Supported lanes.
 
 # Function3 features templates for
 
-Setting CCIP gasLimits.
+- Get List of Supported Chains on CCIP
+- Transfer Tokens Crosschain
+- Send CrossChain Messages
 
-Handling extraArgs to automate future CCIP updates,
 
-Handling sequencing to organize transaction flows.
+## Usage
 
-# Note
-NPM is an abbreviation for Node Package Manager.
+### Transfer Tokens ( WAGMI)
 
-CCIP is an abbreviation for Crosschain Interoperability Protocol.
+```ts
+import {transferToken} from 'function3/lib/wagmi'
+import { sepolia, polygonMumbai } from 'wagmi/chains'
+import {  parseEther, toHex, zeroAddress } from 'viem'
 
-EOA is an abbreviation for "Externally Owned Account".
+
+const {sendHash, messageId} = await transferToken(sepolia.id, polygonMumbai.id, 'receveAddress', 'tokenAddress', parseEther('0.0001'), zeroAddress, walletClient)
+
+
+```
+
+
+
+### Send Message ( WAGMI)
+
+```ts
+import {sendMessage} from 'function3/lib/wagmi'
+import { sepolia, polygonMumbai } from 'wagmi/chains'
+import {  parseEther, toHex, zeroAddress } from 'viem'
+
+
+const {sendHash, messageId} = await sendMessage(sepolia.id, polygonMumbai.id, 'receiver','message', PaymentCurrency.Native, walletClient)
+
+
+```
+
+### Get Supported Tokens
+
+```ts
+import {getSupportedTokens} from 'function3/lib/wagmi'
+import { sepolia, polygonMumbai } from 'wagmi/chains'
+import {  parseEther, toHex, zeroAddress } from 'viem'
+
+
+const data = await getSupportedTokens(sepolia.id, polygonMumbai.id)
+
+
+```
+
+
+
+
+**Transfer Tokens ( Ethers)** - Coming Soon
+
+
+
+**Send Message ( Ethers)**  - Coming soon

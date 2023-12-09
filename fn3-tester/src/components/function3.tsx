@@ -14,8 +14,9 @@ import { stringify } from '../utils/stringify'
 
 import { ethers } from 'ethers'
 
-import {transferToken} from 'function3/lib/wagmi'
-import { polygonMumbai } from 'viem/chains'
+import {sendMessage, transferToken} from 'function3/lib/wagmi'
+import {  polygonMumbai } from 'wagmi/chains'
+import { PaymentCurrency } from 'function3/lib/constants'
 
 
 
@@ -49,6 +50,8 @@ export function Function3() {
       <form
         onSubmit={(e) => {
           e.preventDefault()
+
+          
 
           if(confirm('This wil transfer 0.0001 CCIP-BnM from Sepolia to Mumbai. Continue? ')){
             transferToken(sepolia.id, polygonMumbai.id, '0x8853161EE7A92E2c5c634647b323a7CcB31EF2CD', '0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05', parseEther('0.0001'), zeroAddress, walletClient)
