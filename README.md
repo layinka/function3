@@ -72,3 +72,9 @@ const data = await getSupportedTokens(sepolia.id, polygonMumbai.id)
 
 
 **Send Message ( Ethers)**  - Coming soon
+
+
+
+## Supported Chains
+- Polygon Mumbai
+- Ethereum Sepolia
