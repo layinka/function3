@@ -31,11 +31,7 @@ export function App() {
       {isConnected && (
         <>
 
-          <hr/>
-          <h2>Function3</h2>
-          <Function3 />
-          <br />
-          <br />
+          
           <hr />
           <hr />
           <h2>Network</h2>
@@ -50,6 +46,14 @@ export function App() {
           <Balance />
           <br />
           <hr />
+
+          <hr/>
+          <h2>Function3</h2>
+          <Function3 />
+          <br />
+          <br />
+
+{/*           
           <h2>Block Number</h2>
           <BlockNumber />
           <br />
@@ -99,7 +103,7 @@ export function App() {
           <br />
           <hr />
           <h2>Write Contract (Prepared)</h2>
-          <WriteContractPrepared />
+          <WriteContractPrepared /> */}
         </>
       )}
     </>

@@ -1,6 +1,6 @@
 {
   "name": "function3",
-  "version": "0.0.3-cross",
+  "version": "0.0.5",
   "description": "Crosschain Library Based on CCIP",
   "main": "./lib/index.js",
   "files": [

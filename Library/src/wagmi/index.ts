@@ -5,9 +5,9 @@ import { CCIP_BnM_ADDRESSES, PaymentCurrency } from "../constants";
 import { RouterABI } from "../abis";
 import { routerConfig, supportedChains } from "../constants";
 import { keccak256, toHex, encodeAbiParameters, parseAbiParameters, getContract as getViemContract, parseAbiItem } from "viem";
-import { zeroAddress } from "viem/_types/constants/address";
-import { simulateContract } from "viem/_types/actions/public/simulateContract";
-import { createEventFilter } from "viem/_types/actions/public/createEventFilter";
+import { zeroAddress } from "viem";
+import { createEventFilter, simulateContract } from "viem/actions";
+
 import {publicClientToProvider} from '../utils/wagmi'
 import parseEventLogs from "../utils/parseEventLogs";
 
@@ -126,7 +126,7 @@ export const getSupportedTokens = async (chainId: number, targetChainId: number)
  * @returns 
  */
 export const transferToken = async (sourceChainId: number, destinationChainId: number, destinationAccount: string, tokenAddress: string,
-    amount: bigint, feeTokenAddress: string , walletClient?: any) => {
+    amount: bigint, feeTokenAddress?: string , walletClient?: any) => {
     
   
     /* 
