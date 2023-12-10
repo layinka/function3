@@ -54,7 +54,7 @@ export function Function3() {
           
 
           if(confirm('This wil transfer 0.0001 CCIP-BnM from Sepolia to Mumbai. Continue? ')){
-            transferToken(sepolia.id, polygonMumbai.id, '0x8853161EE7A92E2c5c634647b323a7CcB31EF2CD', '0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05', parseEther('0.0001'), zeroAddress, walletClient)
+            transferToken(sepolia.id, polygonMumbai.id, '0x8853161EE7A92E2c5c634647b323a7CcB31EF2CD', '0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05', parseEther('0.00001'), zeroAddress, walletClient)
             .then((rs)=>{
               console.log('Hash: ', rs.sendHash)
               console.log('Message: ', rs.messageId)
@@ -63,7 +63,7 @@ export function Function3() {
               alert("Message: " + rs.messageId)
             })
             .catch((err)=>{
-
+              console.error('Error  sending CCIP-BnM', err)
             })
           }
           

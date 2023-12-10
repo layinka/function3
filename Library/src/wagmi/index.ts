@@ -1,15 +1,16 @@
-import { fetchToken, getContract, getNetwork, getPublicClient, getWalletClient, readContract, sepolia,  waitForTransaction, erc20ABI } from "@wagmi/core"
-import {prepareWriteContract, writeContract } from "wagmi/actions";
+import { fetchToken, getContract, getNetwork, getPublicClient, getWalletClient, readContract, sepolia,  waitForTransaction, erc20ABI, fetchBalance } from "@wagmi/core"
+import {getAccount, prepareWriteContract, writeContract } from "wagmi/actions";
 import { BasicMessageSenderABI, BasicTokenSenderABI, BurnMintERC677HelperABI } from "../abis";
 import { CCIP_BnM_ADDRESSES, PaymentCurrency } from "../constants";
 import { RouterABI } from "../abis";
 import { routerConfig, supportedChains } from "../constants";
-import { keccak256, toHex, encodeAbiParameters, parseAbiParameters, getContract as getViemContract, parseAbiItem, parseEther } from "viem";
+import { keccak256, toHex, encodeAbiParameters, parseAbiParameters, getContract as getViemContract, parseAbiItem, parseEther, formatEther } from "viem";
 import { zeroAddress } from "viem";
 import { createEventFilter, simulateContract } from "viem/actions";
 
 import {publicClientToProvider} from '../utils/wagmi'
 import parseEventLogs from "../utils/parseEventLogs";
+import { utils } from "ethers";
 
 const MAX_TOKENS_LENGTH = 5;
 
@@ -216,14 +217,23 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
     );
   
     const encodedExtraArgs = functionSelector + extraArgs.slice(2);
+
+    
   
     const message = {
+      // receiver: utils.defaultAbiCoder.encode(["address"], [destinationAccount]),
+      // data: utils.defaultAbiCoder.encode(["string"], [""]), // no data
+
       receiver: encodeAbiParameters(
         //@ts-ignore
-        parseAbiParameters("address a"),
+        parseAbiParameters("address receiver"),
         [destinationAccount as `0x${string}`]
       ),
-      data: "0x", // no data
+      data: encodeAbiParameters(
+        //@ts-ignore
+        parseAbiParameters("string"),
+        ['']
+      ), // no data
       tokenAmounts: tokenAmounts,
       feeToken: feeTokenAddress ? feeTokenAddress : zeroAddress, // If fee token address is provided then fees must be paid in fee token.
       extraArgs: encodedExtraArgs,
@@ -237,10 +247,11 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
     */
   
     const feesResult = await sourceRouter.read.getFee([destinationChainIdSelector, message]);
-    console.log(`Estimated fees (wei): ${feesResult}`);
-    console.log(`Estimated fees (wei): ${parseEther(''+feesResult, 'wei')}`);
+    
 
     const fees: bigint = feesResult as any;// parseEther(''+feesResult, 'wei')
+
+    
     
   
     /* 
@@ -264,31 +275,40 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
     } )
 
     const pClient = getPublicClient({chainId: sourceChainId})
-  
+    const account = getAccount().address
+    
+    // const balance = await fetchBalance({address: account!})
+
+    // console.log('Fees: ', fees, ', fmtd: ', formatEther(fees))
+
+    // console.log('balance: ', balance.value, ', frmtd: ' , balance.formatted)
+
   
     
     let sendHash: string, approvalHash: any;
   
     if (!feeTokenAddress || feeTokenAddress==zeroAddress) {
 
-      console.log('using native')
+      // console.log('using native with account :', account)
       // Pay native
       // First approve the router to spend tokens
 
-      const allowance = await erc20.read.allowance([pClient.account as any, sourceRouterAddress as any]);
-
-      if(allowance< amount){
+      const allowance = await erc20.read.allowance([account as any, sourceRouterAddress as any]);
+      
+      if( allowance< amount){
         //@ts-ignore
         const approvalTx = await erc20.write.approve([sourceRouterAddress, amount], {
           gas: '260000',
         });
+
+        console.log('approvalTx :', approvalTx)
         approvalHash=approvalTx.hash;
         await waitForTransaction({hash: approvalHash}); // wait for the transaction to be mined
         console.log(
           `approved 1 router ${sourceRouterAddress} to spend ${amount} of token ${tokenAddress}. Transaction: ${approvalHash}`
         );
       }else{
-        'Skipping aallowance'
+        console.log('Skipping aallowance')
       }
       
       try{
@@ -302,7 +322,7 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
           walletClient,
           value: fees // fees are send as value since we are paying the fees in native
         })
-        console.log('ccipSendConfig using natve: ', ccipSendConfig)
+        
         const sendTx = await writeContract(ccipSendConfig)
 
         // //@ts-ignore
@@ -312,23 +332,23 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
         // }); // fees are send as value since we are paying the fees in native
         sendHash=sendTx.hash;
       }catch(err){
-        console.error('Errro using natve: ', err)
+        console.error('Error using natve: ', err)
         sendHash=''
       }
       
     } 
     else {
-      console.log('using feetoken')
+      
       if (tokenAddress.toUpperCase() === feeTokenAddress.toUpperCase()) {
         // fee token is the same as the token to transfer
 
-        const allowance = await erc20.read.allowance([pClient.account as any, sourceRouterAddress as any]);
+        const allowance = await erc20.read.allowance([account as any, sourceRouterAddress as any]);
 
         if(allowance< amount+ (fees as any)){
           // Amount tokens to approve are transfer amount + fees
           //@ts-ignore
           const approvalTx = await erc20.write.approve([sourceRouterAddress, amount + fees],  {
-            gas: '260000',
+            gas: '280000',
           });
           approvalHash= approvalTx.hash;
           await waitForTransaction({hash: approvalHash});
@@ -344,7 +364,7 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
         // fee token is different than the token to transfer
         // 2 approvals
 
-        const allowance = await erc20.read.allowance([pClient.account as any, sourceRouterAddress as any]);
+        const allowance = await erc20.read.allowance([account as any, sourceRouterAddress as any]);
         if(allowance< amount){
           //@ts-ignore
           const approvalTx = await erc20.write.approve([sourceRouterAddress, amount]); // 1 approval for the tokens to transfer
@@ -361,6 +381,7 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
             functionName: 'approve',
             args: [sourceRouterAddress as any, fees as any],
             chainId: sourceChainId,
+            gas: BigInt('360000')
             // account: walletClient.
             // walletClient: walletClient
 
@@ -414,7 +435,7 @@ export const transferToken = async (sourceChainId: number, destinationChainId: n
         abi: RouterABI,
         functionName: 'ccipSend',
         args: [destinationChainIdSelector, message],
-        account: pClient.account,
+        account: account,
         blockNumber: receipt.blockNumber-BigInt(1)
       })
 
