@@ -4,16 +4,6 @@ Typescript/JavaScript library for easy crosschain integrations via CCIP
 # The purpose of Function3
 Integrate Crosschain functionality directly into your dApp without having to write smart contracts.
 
-Use our NPM Package that has supports for the following;
-
-- Supported blockchain networks(source and destination),
-
-- Supported accounts(smart contracts/routers and EOAs),
-
-- Supported tokens and
-
-- Supported lanes.
-
 # Function3 features templates for
 
 - Get List of Supported Chains on CCIP
